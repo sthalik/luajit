@@ -18,7 +18,7 @@ set(MINILUA_PATH ${CMAKE_CURRENT_BINARY_DIR}/minilua/${MINILUA_EXE})
 # Build the minilua for host platform
 if (NOT CMAKE_CROSSCOMPILING)
   add_subdirectory(host/cmake/minilua)
-  set(MINILUA_PATH ${CMAKE_CURRENT_BINARY_DIR}/host/cmake/minilua/${MINILUA_EXE})
+  set(MINILUA_PATH $<TARGET_FILE:minilua>)
 else()
   make_directory(${CMAKE_CURRENT_BINARY_DIR}/minilua)
 
@@ -205,7 +205,7 @@ endif()
 
 if (NOT CMAKE_CROSSCOMPILING)
   add_subdirectory(host/cmake/buildvm)
-  set(BUILDVM_PATH ${CMAKE_CURRENT_BINARY_DIR}/host/cmake/buildvm/${BUILDVM_EXE})
+  set(BUILDVM_PATH $<TARGET_FILE:buildvm>)
   add_dependencies(buildvm buildvm_arch_h)
 else()
   set(BUILDVM_PATH ${CMAKE_CURRENT_BINARY_DIR}/buildvm/${BUILDVM_EXE})
@@ -234,7 +234,7 @@ endif()
 set(LJ_VM_S_PATH ${CMAKE_CURRENT_BINARY_DIR}/lj_vm.S)
 add_custom_command(OUTPUT ${LJ_VM_S_PATH}
   COMMAND ${BUILDVM_PATH} -m ${LJVM_MODE} -o ${LJ_VM_S_PATH}
-  DEPENDS ${BUILDVM_PATH}
+  DEPENDS buildvm
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/)
 
 add_custom_target(LJ_VM_S_BUILD ALL
