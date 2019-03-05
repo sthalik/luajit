@@ -6,6 +6,8 @@ set(EXTRA_COMPILER_FLAGS_FILE "" CACHE PATH "Location of a file to specify extra
 set(EXTRA_COMPILER_FLAGS "")
 if (EXISTS ${EXTRA_COMPILER_FLAGS_FILE})
   file(READ ${EXTRA_COMPILER_FLAGS_FILE} EXTRA_COMPILER_FLAGS)
+else()
+  set(EXTRA_COMPILER_FLAGS ${BUILDVM_COMPILER_FLAGS})
 endif()
 
 include(CheckTypeSize)
@@ -36,6 +38,7 @@ target_compile_options(buildvm PRIVATE
   ${EXTRA_COMPILER_FLAGS} ${CXX_ARCH_FLAGS})
 target_link_libraries(buildvm PRIVATE ${CXX_ARCH_FLAGS} ${LIBM})
 target_include_directories(buildvm PRIVATE
+  ${CMAKE_CURRENT_BINARY_DIR}/../../../
   ${CMAKE_CURRENT_BINARY_DIR}/../
   ${CMAKE_CURRENT_SOURCE_DIR}/../../../
   ${CMAKE_CURRENT_SOURCE_DIR}/../..)

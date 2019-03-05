@@ -1,7 +1,13 @@
 cmake_minimum_required(VERSION 3.0)
 
+set(LJ_CROSSCOMPILING OFF)
+if (NOT ("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "${CMAKE_SYSTEM_NAME}"))
+  set(LJ_CROSSCOMPILING ON)
+endif()
+
 # option(LJ_TARGET_GC64 "Enable GC64 mode for x64" OFF)
 set(LUA_MULTILIB "lib" CACHE PATH "The name of lib directory." )
+set(CMAKE_CROSSCOMPILING ${LJ_CROSSCOMPILING} CACHE BOOL "Cross-compiling")
 
 set(MINILUA_EXE minilua)
 if ("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Windows")
@@ -10,16 +16,21 @@ endif()
 set(MINILUA_PATH ${CMAKE_CURRENT_BINARY_DIR}/minilua/${MINILUA_EXE})
 
 # Build the minilua for host platform
-make_directory(${CMAKE_CURRENT_BINARY_DIR}/minilua)
+if (NOT CMAKE_CROSSCOMPILING)
+  add_subdirectory(host/cmake/minilua)
+  set(MINILUA_PATH ${CMAKE_CURRENT_BINARY_DIR}/host/cmake/minilua/${MINILUA_EXE})
+else()
+  make_directory(${CMAKE_CURRENT_BINARY_DIR}/minilua)
 
-add_custom_command(OUTPUT ${MINILUA_PATH}
-  COMMAND ${CMAKE_COMMAND} ${CMAKE_CURRENT_SOURCE_DIR}/host/cmake/minilua
-  COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/minilua
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/minilua)
+  add_custom_command(OUTPUT ${MINILUA_PATH}
+    COMMAND ${CMAKE_COMMAND} ${CMAKE_CURRENT_SOURCE_DIR}/host/cmake/minilua
+    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/minilua
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/minilua)
 
-add_custom_target(MINILUA_BUILD ALL
-  DEPENDS ${MINILUA_PATH}
-)
+  add_custom_target(minilua ALL
+    DEPENDS ${MINILUA_PATH}
+  )
+endif()
 
 include(TestBigEndian)
 TEST_BIG_ENDIAN(LJ_BIG_ENDIAN)
@@ -176,8 +187,8 @@ set(VM_DASC_PATH ${CMAKE_CURRENT_SOURCE_DIR}/vm_${DASM_ARCH}.dasc)
 
 add_custom_command(OUTPUT ${BUILDVM_ARCH_H}
   COMMAND ${MINILUA_PATH} ${DASM_PATH} ${DASM_FLAGS} -o ${BUILDVM_ARCH_H} ${VM_DASC_PATH}
-  DEPENDS ${MINILUA_PATH})
-add_custom_target(BUILDVM_ARCH_H_BUILD ALL
+  DEPENDS minilua)
+add_custom_target(buildvm_arch_h ALL
   DEPENDS ${BUILDVM_ARCH_H}
 )
 
@@ -191,20 +202,27 @@ set(BUILDVM_EXE buildvm)
 if ("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Windows")
   set(BUILDVM_EXE buildvm.exe)
 endif()
-set(BUILDVM_PATH ${CMAKE_CURRENT_BINARY_DIR}/buildvm/${BUILDVM_EXE})
 
-make_directory(${CMAKE_CURRENT_BINARY_DIR}/buildvm)
+if (NOT CMAKE_CROSSCOMPILING)
+  add_subdirectory(host/cmake/buildvm)
+  set(BUILDVM_PATH ${CMAKE_CURRENT_BINARY_DIR}/host/cmake/buildvm/${BUILDVM_EXE})
+  add_dependencies(buildvm buildvm_arch_h)
+else()
+  set(BUILDVM_PATH ${CMAKE_CURRENT_BINARY_DIR}/buildvm/${BUILDVM_EXE})
 
-add_custom_command(OUTPUT ${BUILDVM_PATH}
-  COMMAND ${CMAKE_COMMAND} ${CMAKE_CURRENT_SOURCE_DIR}/host/cmake/buildvm -DEXTRA_COMPILER_FLAGS_FILE=${BUILDVM_COMPILER_FLAGS_PATH}
-  COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/buildvm
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/host/cmake/buildvm/CMakeLists.txt
-  DEPENDS BUILDVM_ARCH_H_BUILD
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/buildvm)
+  make_directory(${CMAKE_CURRENT_BINARY_DIR}/buildvm)
 
-add_custom_target(BUILDVM_BUILD ALL
-  DEPENDS ${BUILDVM_PATH}
-)
+  add_custom_command(OUTPUT ${BUILDVM_PATH}
+    COMMAND ${CMAKE_COMMAND} ${CMAKE_CURRENT_SOURCE_DIR}/host/cmake/buildvm -DEXTRA_COMPILER_FLAGS_FILE=${BUILDVM_COMPILER_FLAGS_PATH}
+    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/buildvm
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/host/cmake/buildvm/CMakeLists.txt
+    DEPENDS buildvm_arch_h
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/buildvm)
+
+  add_custom_target(buildvm ALL
+    DEPENDS ${BUILDVM_PATH}
+  )
+endif()
 
 set(LJVM_MODE elfasm)
 if (APPLE)
@@ -240,7 +258,7 @@ add_custom_command(
   COMMAND ${BUILDVM_PATH} -m ffdef -o ${LJ_FFDEF_PATH} ${LJ_LIB_SOURCES}
   COMMAND ${BUILDVM_PATH} -m bcdef -o ${LJ_BCDEF_PATH} ${LJ_LIB_SOURCES}
   COMMAND ${BUILDVM_PATH} -m vmdef -o ${LJ_VMDEF_PATH} ${LJ_LIB_SOURCES}
-  DEPENDS ${BUILDVM_PATH} ${LJ_LIB_SOURCE}
+  DEPENDS buildvm ${LJ_LIB_SOURCE}
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/)
 
 add_custom_target(LJ_DEF_BUILD ALL
@@ -332,8 +350,8 @@ set(luajit_sources lib_aux.c
 add_library(libluajit ${luajit_sources})
 set_target_properties(libluajit PROPERTIES OUTPUT_NAME luajit)
 add_dependencies(libluajit
-  BUILDVM_ARCH_H_BUILD
-  BUILDVM_BUILD
+  buildvm_arch_h
+  buildvm
   LJ_DEF_BUILD
   LJ_FOLDDEF_BUILD)
 target_include_directories(libluajit PRIVATE
