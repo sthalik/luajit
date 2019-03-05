@@ -379,7 +379,8 @@ target_compile_definitions(libluajit PRIVATE ${LJ_DEFINITIONS})
 
 if("${LJ_TARGET_ARCH}" STREQUAL "x86")
   if (CMAKE_COMPILER_IS_CLANGXX OR CMAKE_COMPILER_IS_GNUCXX)
-    target_compile_definitions(libluajit -march=i686 -msse -msse2 -mfpmath=sse)
+    target_compile_options(libluajit PRIVATE
+      -march=i686 -msse -msse2 -mfpmath=sse)
   endif()
 endif()
 
