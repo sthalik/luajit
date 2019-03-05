@@ -358,7 +358,9 @@ target_include_directories(libluajit PRIVATE
   ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR})
 if (BUILD_SHARED_LIBS)
-  set(LJ_DEFINITIONS ${LJ_DEFINITIONS} -DLUA_BUILD_AS_DLL)
+  if(WINDOWS)
+    set(LJ_DEFINITIONS ${LJ_DEFINITIONS} -DLUA_BUILD_AS_DLL)
+  endif()
   if (APPLE)
     target_link_libraries("-image_base 7fff04c4a000")
   endif()
