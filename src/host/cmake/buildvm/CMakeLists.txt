@@ -26,7 +26,7 @@ if (NOT (CMAKE_SIZEOF_VOID_P EQUAL ${TARGET_SIZE_OF_P}))
     endif()
 endif()
 
-find_library(LIBM NAMES m)
+find_library(LIBM_LIBRARIES NAMES m)
 
 add_executable(buildvm
   ../../buildvm.c
@@ -34,9 +34,14 @@ add_executable(buildvm
   ../../buildvm_fold.c
   ../../buildvm_lib.c
   ../../buildvm_peobj.c)
+
 target_compile_options(buildvm PRIVATE
   ${EXTRA_COMPILER_FLAGS} ${CXX_ARCH_FLAGS})
-target_link_libraries(buildvm PRIVATE ${CXX_ARCH_FLAGS} ${LIBM})
+target_link_libraries(buildvm PRIVATE ${CXX_ARCH_FLAGS})
+if (LIBM)
+  target_link_libraries(buildvm PRIVATE ${LIBM_LIBRARIES})
+endif()
+
 target_include_directories(buildvm PRIVATE
   ${CMAKE_CURRENT_BINARY_DIR}/../../../
   ${CMAKE_CURRENT_BINARY_DIR}/../

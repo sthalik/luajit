@@ -47,8 +47,8 @@ detect_fpu_mode(LJ_DETECTED_FPU_MODE)
 detect_fpu_abi(LJ_DETECTED_FPU_ABI)
 message(STATUS "FPU: ${LJ_DETECTED_FPU_MODE} FPU ABI: ${LJ_DETECTED_FPU_ABI}")
 
-find_library(LIBM NAMES m)
-find_library(LIBDL NAMES dl)
+find_library(LIBM_LIBRARIES NAMES m)
+find_library(LIBDL_LIBRARIES NAMES dl)
 
 set(TARGET_ARCH "")
 set(DASM_FLAGS "")
@@ -361,9 +361,14 @@ if (BUILD_SHARED_LIBS)
   set(LJ_DEFINITIONS ${LJ_DEFINITIONS} -DLUA_BUILD_AS_DLL)
   target_link_libraries("-image_base 7fff04c4a000")
 endif()
-if(UNIX)
-  target_link_libraries(libluajit ${LIBM} ${LIBDL})
-endif(UNIX)
+
+if(LIBM_LIBRARIES)
+  target_link_libraries(libluajit ${LIBM_LIBRARIES})
+endif()
+
+if(LIBDL_LIBRARIES)
+  target_link_libraries(libluajit ${LIBDL_LIBRARIES})
+endif()
 
 set(LJ_DEFINITIONS ${LJ_DEFINITIONS} -DLUA_MULTILIB="${LUA_MULTILIB}")
 target_compile_definitions(libluajit PRIVATE ${LJ_DEFINITIONS})
