@@ -35,7 +35,7 @@ else()
 endif()
 
 include(TestBigEndian)
-TEST_BIG_ENDIAN(LJ_BIG_ENDIAN)
+test_big_endian(LJ_BIG_ENDIAN)
 
 include(CheckTypeSize)
 include(CheckCXXCompilerFlag)
@@ -47,7 +47,6 @@ detect_architecture(LJ_DETECTED_ARCH)
 include(DetectFPUApi)
 detect_fpu_mode(LJ_DETECTED_FPU_MODE)
 detect_fpu_abi(LJ_DETECTED_FPU_ABI)
-message(STATUS "FPU: ${LJ_DETECTED_FPU_MODE} FPU ABI: ${LJ_DETECTED_FPU_ABI}")
 
 find_library(LIBM_LIBRARIES NAMES m)
 find_library(LIBDL_LIBRARIES NAMES dl)
@@ -58,26 +57,26 @@ set(DASM_FLAGS "")
 set(LJ_TARGET_ARCH "")
 if("${LJ_DETECTED_ARCH}" STREQUAL "x86")
   set(LJ_TARGET_ARCH "x86")
-elseif("${LJ_DETECTED_ARCH}" STREQUAL "x86_64")
+elseif ("${LJ_DETECTED_ARCH}" STREQUAL "x86_64")
   set(LJ_TARGET_ARCH "x64")
-elseif("${LJ_DETECTED_ARCH}" STREQUAL "AArch64")
+elseif ("${LJ_DETECTED_ARCH}" STREQUAL "AArch64")
   set(LJ_TARGET_ARCH "arm64")
   if (LJ_BIG_ENDIAN)
     set(TARGET_ARCH -D__AARCH64EB__=1)
   endif()
-elseif("${LJ_DETECTED_ARCH}" STREQUAL "ARM")
+elseif ("${LJ_DETECTED_ARCH}" STREQUAL "ARM")
   set(LJ_TARGET_ARCH "arm")
-elseif("${LJ_DETECTED_ARCH}" STREQUAL "Mips64")
+elseif ("${LJ_DETECTED_ARCH}" STREQUAL "Mips64")
   set(LJ_TARGET_ARCH "mips64")
   if (NOT LJ_BIG_ENDIAN)
     set(TARGET_ARCH -D__MIPSEL__=1)
   endif()
-elseif("${LJ_DETECTED_ARCH}" STREQUAL "Mips")
+elseif ("${LJ_DETECTED_ARCH}" STREQUAL "Mips")
   set(LJ_TARGET_ARCH "mips")
   if (NOT LJ_BIG_ENDIAN)
     set(TARGET_ARCH -D__MIPSEL__=1)
   endif()
-elseif("${LJ_DETECTED_ARCH}" STREQUAL "PowerPC")
+elseif ("${LJ_DETECTED_ARCH}" STREQUAL "PowerPC")
   if (LJ_64)
     set(LJ_TARGET_ARCH "ppc64")
   else()
@@ -110,7 +109,7 @@ set(TARGET_ARCH ${TARGET_ARCH} -DLUAJIT_TARGET=LUAJIT_ARCH_${LJ_TARGET_ARCH})
 
 if (WIN32 OR MINGW)
   set(DASM_FLAGS ${DASM_FLAGS} -D WIN)
-elseif(IOS)
+elseif (IOS)
   set(DASM_FLAGS ${DASM_FLAGS} -D IOS)
   set(DASM_FLAGS ${DASM_FLAGS} -D NO_UNWIND)
   set(TARGET_ARCH ${TARGET_ARCH} -DLJ_NO_UNWIND=1)
@@ -203,7 +202,8 @@ endif()
 set(VM_DASC_PATH ${CMAKE_CURRENT_SOURCE_DIR}/vm_${DASM_ARCH}.dasc)
 
 add_custom_command(OUTPUT ${BUILDVM_ARCH_H}
-  COMMAND ${MINILUA_PATH} ${DASM_PATH} ${DASM_FLAGS} -o ${BUILDVM_ARCH_H} ${VM_DASC_PATH}
+  COMMAND ${MINILUA_PATH} ${DASM_PATH} ${DASM_FLAGS}
+          -o ${BUILDVM_ARCH_H} ${VM_DASC_PATH}
   DEPENDS minilua)
 add_custom_target(buildvm_arch_h ALL
   DEPENDS ${BUILDVM_ARCH_H}
@@ -212,7 +212,8 @@ add_custom_target(buildvm_arch_h ALL
 # Build the buildvm for host platform
 set(BUILDVM_COMPILER_FLAGS "${TARGET_ARCH}")
 
-set(BUILDVM_COMPILER_FLAGS_PATH "${CMAKE_CURRENT_BINARY_DIR}/buildvm_flags.config")
+set(BUILDVM_COMPILER_FLAGS_PATH
+  "${CMAKE_CURRENT_BINARY_DIR}/buildvm_flags.config")
 file(WRITE ${BUILDVM_COMPILER_FLAGS_PATH} "${BUILDVM_COMPILER_FLAGS}")
 
 set(BUILDVM_EXE buildvm)
@@ -230,7 +231,8 @@ else()
   make_directory(${CMAKE_CURRENT_BINARY_DIR}/buildvm)
 
   add_custom_command(OUTPUT ${BUILDVM_PATH}
-    COMMAND ${CMAKE_COMMAND} ${CMAKE_CURRENT_SOURCE_DIR}/host/cmake/buildvm -DEXTRA_COMPILER_FLAGS_FILE=${BUILDVM_COMPILER_FLAGS_PATH}
+    COMMAND ${CMAKE_COMMAND} ${CMAKE_CURRENT_SOURCE_DIR}/host/cmake/buildvm
+            -DEXTRA_COMPILER_FLAGS_FILE=${BUILDVM_COMPILER_FLAGS_PATH}
     COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/buildvm
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/host/cmake/buildvm/CMakeLists.txt
     DEPENDS buildvm_arch_h
@@ -244,7 +246,7 @@ endif()
 set(LJVM_MODE elfasm)
 if (APPLE)
   set(LJVM_MODE machasm)
-elseif(WIN32 OR MINGW)
+elseif (WIN32 OR MINGW)
   set(LJVM_MODE peobj)
 endif()
 
@@ -259,8 +261,8 @@ add_custom_command(OUTPUT ${LJ_VM_S_PATH}
   DEPENDS buildvm
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/)
 
-add_custom_target(LJ_VM_S_BUILD ALL
-  DEPENDS ${LJ_VM_S_BUILD}
+add_custom_target(lj_gen_vm_s ALL
+  DEPENDS ${LJ_VM_S_PATH}
 )
 
 make_directory(${CMAKE_CURRENT_BINARY_DIR}/jit)
@@ -284,7 +286,7 @@ add_custom_command(
   DEPENDS buildvm ${LJ_LIB_SOURCE}
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/)
 
-add_custom_target(LJ_DEF_BUILD ALL
+add_custom_target(lj_gen_headers ALL
   DEPENDS ${LJ_LIBDEF_PATH} ${LJ_RECDEF_PATH} ${LJ_VMDEF_PATH}
   DEPENDS ${LJ_FFDEF_PATH} ${LJ_BCDEF_PATH}
 )
@@ -298,7 +300,7 @@ add_custom_command(
   DEPENDS ${BUILDVM_PATH}
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/)
 
-add_custom_target(LJ_FOLDDEF_BUILD ALL
+add_custom_target(lj_gen_folddef ALL
   DEPENDS ${LJ_FOLDDEF_PATH}
 )
 
@@ -375,8 +377,8 @@ set_target_properties(libluajit PROPERTIES OUTPUT_NAME luajit)
 add_dependencies(libluajit
   buildvm_arch_h
   buildvm
-  LJ_DEF_BUILD
-  LJ_FOLDDEF_BUILD)
+  lj_gen_headers
+  lj_gen_folddef)
 target_include_directories(libluajit PRIVATE
   ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR})
@@ -393,14 +395,14 @@ if(LIBM_LIBRARIES)
   target_link_libraries(libluajit ${LIBM_LIBRARIES})
 endif()
 
-if(LIBDL_LIBRARIES)
+if (LIBDL_LIBRARIES)
   target_link_libraries(libluajit ${LIBDL_LIBRARIES})
 endif()
 
 set(LJ_DEFINITIONS ${LJ_DEFINITIONS} -DLUA_MULTILIB="${LUA_MULTILIB}")
 target_compile_definitions(libluajit PRIVATE ${LJ_DEFINITIONS})
 
-if("${LJ_TARGET_ARCH}" STREQUAL "x86")
+if ("${LJ_TARGET_ARCH}" STREQUAL "x86")
   if (CMAKE_COMPILER_IS_CLANGXX OR CMAKE_COMPILER_IS_GNUCXX)
     target_compile_options(libluajit PRIVATE
       -march=i686 -msse -msse2 -mfpmath=sse)
