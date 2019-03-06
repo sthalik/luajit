@@ -275,6 +275,7 @@ set(LJ_LIB_SOURCES
   lib_io.c lib_os.c lib_package.c lib_debug.c lib_jit.c lib_ffi.c)
 add_custom_command(
   OUTPUT ${LJ_LIBDEF_PATH} ${LJ_VMDEF_PATH} ${LJ_RECDEF_PATH} ${LJ_FFDEF_PATH}
+  OUTPUT ${LJ_BCDEF_PATH}
   COMMAND ${BUILDVM_PATH} -m libdef -o ${LJ_LIBDEF_PATH} ${LJ_LIB_SOURCES}
   COMMAND ${BUILDVM_PATH} -m recdef -o ${LJ_RECDEF_PATH} ${LJ_LIB_SOURCES}
   COMMAND ${BUILDVM_PATH} -m ffdef -o ${LJ_FFDEF_PATH} ${LJ_LIB_SOURCES}
