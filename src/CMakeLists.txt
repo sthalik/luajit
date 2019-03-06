@@ -108,7 +108,7 @@ endif()
 
 set(TARGET_ARCH ${TARGET_ARCH} -DLUAJIT_TARGET=LUAJIT_ARCH_${LJ_TARGET_ARCH})
 
-if (WINDOWS)
+if (WIN32 OR MINGW)
   set(DASM_FLAGS ${DASM_FLAGS} -D WIN)
 elseif(IOS)
   set(DASM_FLAGS ${DASM_FLAGS} -D IOS)
@@ -121,7 +121,7 @@ set(LJ_DEFINITIONS "")
 set(LJ_ENABLE_LARGEFILE 1)
 if (ANDROID AND (${CMAKE_SYSTEM_VERSION} LESS 21))
   set(LJ_ENABLE_LARGEFILE 0)
-elseif (WINDOWS)
+elseif (WIN32 OR MINGW)
   set(LJ_ENABLE_LARGEFILE 0)
 endif()
 
@@ -244,11 +244,16 @@ endif()
 set(LJVM_MODE elfasm)
 if (APPLE)
   set(LJVM_MODE machasm)
-elseif(WINDOWS)
+elseif(WIN32 OR MINGW)
   set(LJVM_MODE peobj)
 endif()
 
-set(LJ_VM_S_PATH ${CMAKE_CURRENT_BINARY_DIR}/lj_vm.S)
+set(LJ_VM_NAME lj_vm.S)
+if ("${LJVM_MODE}" STREQUAL "peobj")
+  set(LJ_VM_NAME lj_vm.obj)
+endif()
+
+set(LJ_VM_S_PATH ${CMAKE_CURRENT_BINARY_DIR}/${LJ_VM_NAME})
 add_custom_command(OUTPUT ${LJ_VM_S_PATH}
   COMMAND ${BUILDVM_PATH} -m ${LJVM_MODE} -o ${LJ_VM_S_PATH}
   DEPENDS buildvm
@@ -361,7 +366,7 @@ set(luajit_sources lib_aux.c
     lj_udata.c
     lj_vmevent.c
     lj_vmmath.c
-    lj_vm.S)
+    ${LJ_VM_NAME})
 
 # Build the luajit static library
 add_library(libluajit ${luajit_sources})
@@ -375,7 +380,7 @@ target_include_directories(libluajit PRIVATE
   ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR})
 if (BUILD_SHARED_LIBS)
-  if(WINDOWS)
+  if(WIN32 OR MINGW)
     set(LJ_DEFINITIONS ${LJ_DEFINITIONS} -DLUA_BUILD_AS_DLL)
   endif()
   if (APPLE)
