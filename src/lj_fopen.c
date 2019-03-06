@@ -2,7 +2,7 @@
 /*
  * Forces to look for unicode paths on Windows
  */
-#ifdef _WIN32
+#if defined(_WIN32) && defined(LUAJIT_FORCE_UTF8_FOPEN)
 #include <windows.h>
 
 FILE *_lua_fopen(const char *filename, const char *mode)

@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(LUAJIT_FORCE_UTF8_FOPEN)
 FILE *_lua_fopen(const char *filename, const char *mode);
 FILE *_lua_freopen(const char *filename, const char *mode, FILE *oldfile);
 #else
