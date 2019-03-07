@@ -10,6 +10,7 @@ set(LUA_MULTILIB "lib" CACHE PATH "The name of lib directory." )
 set(CMAKE_CROSSCOMPILING ${LJ_CROSSCOMPILING} CACHE BOOL "Cross-compiling")
 set(LUAJIT_DISABLE_FFI OFF CACHE BOOL "Permanently disable the FFI extension")
 set(LUAJIT_DISABLE_JIT OFF CACHE BOOL "Disable the JIT compiler")
+set(LUAJIT_USE_GDBJIT OFF CACHE BOOL "Enable GDB support for JIT compiled code")
 set(LUAJIT_FORCE_UTF8_FOPEN OFF CACHE BOOL "Enforce UTF8 paths charset in fopen()/freopen() calls, even on Windows")
 
 set(MINILUA_EXE minilua)
@@ -214,6 +215,10 @@ if (LUAJIT_DISABLE_JIT)
   set(LJ_DEFINITIONS ${LJ_DEFINITIONS} -DLUAJIT_DISABLE_JIT)
   set(TARGET_ARCH ${TARGET_ARCH} -DLUAJIT_DISABLE_JIT)
 endif()
+if(LUAJIT_USE_GDBJIT)
+  set(LJ_DEFINITIONS ${LJ_DEFINITIONS} -DLUAJIT_USE_GDBJIT)
+  set(TARGET_ARCH ${TARGET_ARCH} -DLUAJIT_USE_GDBJIT)
+endif()
 if(LUAJIT_FORCE_UTF8_FOPEN)
   set(LJ_DEFINITIONS ${LJ_DEFINITIONS} -DLUAJIT_FORCE_UTF8_FOPEN)
   set(TARGET_ARCH ${TARGET_ARCH} -DLUAJIT_FORCE_UTF8_FOPEN)
@@ -360,7 +365,6 @@ set(luajit_sources lib_aux.c
     lj_ffrecord.c
     lj_func.c
     lj_gc.c
-    lj_gdbjit.c
     lj_ir.c
     lj_lex.c
     lj_lib.c
@@ -390,6 +394,10 @@ set(luajit_sources lib_aux.c
     lj_vmevent.c
     lj_vmmath.c
     ${LJ_VM_NAME})
+
+if(LUAJIT_USE_GDBJIT)
+    list(APPEND luajit_sources lj_gdbjit.c)
+endif()
 
 if(WIN32 AND LUAJIT_FORCE_UTF8_FOPEN)
     list(APPEND luajit_sources lj_fopen.c)
