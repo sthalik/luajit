@@ -389,7 +389,8 @@ add_custom_target(lj_gen_folddef ALL
   DEPENDS ${LJ_FOLDDEF_PATH}
 )
 
-set(luajit_sources lib_aux.c
+set(luajit_sources
+    lib_aux.c
     lib_base.c
     lib_bit.c
     lib_debug.c
@@ -456,11 +457,11 @@ set(luajit_sources lib_aux.c
     ${LJ_VM_NAME})
 
 if(LUAJIT_USE_GDBJIT)
-    list(APPEND luajit_sources lj_gdbjit.c)
+  list(APPEND luajit_sources lj_gdbjit.c)
 endif()
 
 if(WIN32 AND LUAJIT_FORCE_UTF8_FOPEN)
-    list(APPEND luajit_sources lj_fopen.c)
+  list(APPEND luajit_sources lj_fopen.c)
 endif()
 
 # Build the luajit static library
