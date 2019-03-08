@@ -4,11 +4,12 @@
 # Performs a try_compile to determine the architecture of the target.
 #
 ##===----------------------------------------------------------------------===##
+get_filename_component(__check_architecture_size_dir "${CMAKE_CURRENT_LIST_FILE}" PATH)
 
 macro(detect_architecture variable)
   try_compile(HAVE_${variable}
     ${CMAKE_BINARY_DIR}
-    ${CMAKE_SOURCE_DIR}/cmake/modules/DetectArchitecture.c
+    ${__check_architecture_size_dir}/DetectArchitecture.c
     OUTPUT_VARIABLE OUTPUT
     COPY_FILE ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/DetectArchitecture.bin)
 
