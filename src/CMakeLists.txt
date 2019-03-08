@@ -10,7 +10,13 @@ set(LUA_MULTILIB "lib" CACHE PATH "The name of lib directory." )
 set(CMAKE_CROSSCOMPILING ${LJ_CROSSCOMPILING} CACHE BOOL "Cross-compiling")
 set(LUAJIT_DISABLE_FFI OFF CACHE BOOL "Permanently disable the FFI extension")
 set(LUAJIT_DISABLE_JIT OFF CACHE BOOL "Disable the JIT compiler")
-set(LUAJIT_USE_GDBJIT OFF CACHE BOOL "Enable GDB support for JIT compiled code")
+set(LUAJIT_NUMMODE 0 CACHE STRING
+"Specify the number mode to use. Possible values:
+  0 - Default mode
+  1 - Single number mode
+  2 - Dual number mode
+")
+set(LUAJIT_USE_GDBJIT OFF CACHE BOOL "Enable the GDB JIT API")
 set(LUAJIT_FORCE_UTF8_FOPEN OFF CACHE BOOL "Enforce UTF8 paths charset in fopen()/freopen() calls, even on Windows")
 
 set(MINILUA_EXE minilua)
@@ -94,16 +100,20 @@ else()
 endif()
 
 if("${LJ_DETECTED_FPU_MODE}" STREQUAL "Hard")
+  set(LJ_HAS_FPU 1)
   set(DASM_FLAGS ${DASM_FLAGS} -D FPU)
   set(TARGET_ARCH ${TARGET_ARCH} -DDLJ_ARCH_HASFPU=1)
 else()
+  set(LJ_HAS_FPU 0)
   set(TARGET_ARCH ${TARGET_ARCH} -DDLJ_ARCH_HASFPU=0)
 endif()
 
 if("${LJ_DETECTED_FPU_ABI}" STREQUAL "Hard")
+  set(LJ_ABI_SOFTFP 0)
   set(DASM_FLAGS ${DASM_FLAGS} -D HFABI)
   set(TARGET_ARCH ${TARGET_ARCH} -DLJ_ABI_SOFTFP=0)
 else()
+  set(LJ_ABI_SOFTFP 1)
   set(TARGET_ARCH ${TARGET_ARCH} -DLJ_ABI_SOFTFP=1)
 endif()
 
@@ -155,6 +165,41 @@ endif()
 
 set(LJ_FR2 ${LJ_GC64})
 
+set(LJ_NUMMODE_SINGLE 0) # Single-number mode only.
+set(LJ_NUMMODE_SINGLE_DUAL 1) # Default to single-number mode.
+set(LJ_NUMMODE_DUAL 2) # Dual-number mode only.
+set(LJ_NUMMODE_DUAL_SINGLE 3) # Default to dual-number mode.
+
+set(LJ_ARCH_NUMMODE ${LJ_NUMMODE_DUAL})
+if (LJ_HAS_FPU)
+  set(LJ_ARCH_NUMMODE ${LJ_NUMMODE_DUAL_SINGLE})
+endif()
+
+if (("${LJ_TARGET_ARCH}" STREQUAL "x86") OR
+    ("${LJ_TARGET_ARCH}" STREQUAL "x64"))
+  set(LJ_ARCH_NUMMODE ${LJ_NUMMODE_SINGLE_DUAL})
+endif()
+
+if (("${LJ_TARGET_ARCH}" STREQUAL "arm") OR
+    ("${LJ_TARGET_ARCH}" STREQUAL "arm64") OR
+    ("${LJ_TARGET_ARCH}" STREQUAL "mips") OR
+    ("${LJ_TARGET_ARCH}" STREQUAL "mips64"))
+  set(LJ_ARCH_NUMMODE ${LJ_NUMMODE_DUAL})
+endif()
+
+# Enable or disable the dual-number mode for the VM.
+if (((LJ_ARCH_NUMMODE EQUAL LJ_NUMMODE_SINGLE) AND (LUAJIT_NUMMODE EQUAL 2)) OR
+    ((LJ_ARCH_NUMMODE EQUAL LJ_NUMMODE_DUAL) AND (LUAJIT_NUMMODE EQUAL 1)))
+  message (FATAL_ERROR "No support for this number mode on this architecture")
+endif()
+if ((LJ_ARCH_NUMMODE EQUAL LJ_NUMMODE_DUAL) OR
+    ((LJ_ARCH_NUMMODE EQUAL LJ_NUMMODE_DUAL_SINGLE) AND NOT (LUAJIT_NUMMODE EQUAL 1)) OR
+    ((LJ_ARCH_NUMMODE EQUAL LJ_NUMMODE_SINGLE_DUAL) AND (LUAJIT_NUMMODE EQUAL 2)))
+  set(LJ_DUALNUM 1)
+else()
+  set(LJ_DUALNUM 0)
+endif()
+
 set(BUILDVM_ARCH_H ${CMAKE_CURRENT_BINARY_DIR}/buildvm_arch.h)
 set(DASM_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../dynasm/dynasm.lua)
 
@@ -174,6 +219,10 @@ endif()
 
 if (LJ_JIT)
   set(DASM_FLAGS ${DASM_FLAGS} -D JIT)
+endif()
+
+if (LJ_DUALNUM)
+  set(DASM_FLAGS ${DASM_FLAGS} -D DUALNUM)
 endif()
 
 set(DASM_ARCH ${LJ_TARGET_ARCH})
@@ -222,6 +271,17 @@ endif()
 if(LUAJIT_FORCE_UTF8_FOPEN)
   set(LJ_DEFINITIONS ${LJ_DEFINITIONS} -DLUAJIT_FORCE_UTF8_FOPEN)
   set(TARGET_ARCH ${TARGET_ARCH} -DLUAJIT_FORCE_UTF8_FOPEN)
+endif()
+
+if (("${LUAJIT_NUMMODE}" STREQUAL "1") OR
+    ("${LUAJIT_NUMMODE}" STREQUAL "2"))
+  set(LJ_DEFINITIONS ${LJ_DEFINITIONS} -DLUAJIT_NUMMODE=${LUAJIT_NUMMODE})
+  set(TARGET_ARCH ${TARGET_ARCH} -DLUAJIT_NUMMODE=${LUAJIT_NUMMODE})
+endif()
+
+if (LUAJIT_ENABLE_GDBJIT)
+  set(LJ_DEFINITIONS ${LJ_DEFINITIONS} -DLUAJIT_ENABLE_GDBJIT)
+  set(TARGET_ARCH ${TARGET_ARCH} -DLUAJIT_ENABLE_GDBJIT)
 endif()
 
 set(VM_DASC_PATH ${CMAKE_CURRENT_SOURCE_DIR}/vm_${DASM_ARCH}.dasc)

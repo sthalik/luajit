@@ -8,7 +8,7 @@
 macro(detect_fpu_mode variable)
   try_compile(HAVE_${variable}
     ${CMAKE_BINARY_DIR}
-    ${CMAKE_SOURCE_DIR}/cmake/modules/DetectFpuAbi.c
+    ${LUAJIT_TOP_SOURCE_DIR}/cmake/modules/DetectFpuAbi.c
     OUTPUT_VARIABLE OUTPUT
     COPY_FILE ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/DetectFpuAbi.bin)
 
@@ -38,7 +38,7 @@ endmacro(detect_fpu_mode)
 macro(detect_fpu_abi variable)
   try_compile(HAVE_${variable}
     ${CMAKE_BINARY_DIR}
-    ${CMAKE_SOURCE_DIR}/cmake/modules/DetectFpuAbi.c
+    ${LUAJIT_TOP_SOURCE_DIR}/cmake/modules/DetectFpuAbi.c
     OUTPUT_VARIABLE OUTPUT
     COPY_FILE ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/DetectFpuAbi.bin)
 

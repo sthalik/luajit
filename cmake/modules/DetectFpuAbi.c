@@ -5,9 +5,9 @@
 #endif
 
 #if !HAS_FPU
-const char *str = "FPU IS Soft";
+const char *str = "\0FPU IS Soft";
 #else
-const char *str = "FPU IS Hard";
+const char *str = "\0FPU IS Hard";
 #endif
 
 #if defined(__SOFTFP__) || defined(_SOFT_FLOAT) || defined(_SOFT_DOUBLE) || defined(__mips_soft_float)
@@ -21,9 +21,9 @@ const char *str = "FPU IS Hard";
 #endif
 
 #if SOFT_FPU_ABI
-const char *fpu_abi_str = "FPU ABI IS Soft";
+const char *fpu_abi_str = "\0FPU ABI IS Soft";
 #else
-const char *fpu_abi_str = "FPU ABI IS Hard";
+const char *fpu_abi_str = "\0FPU ABI IS Hard";
 #endif
 
 int main(int argc, char **argv) {
