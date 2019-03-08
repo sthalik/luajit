@@ -8,7 +8,7 @@
 macro(detect_architecture variable)
   try_compile(HAVE_${variable}
     ${CMAKE_BINARY_DIR}
-    ${CMAKE_SOURCE_DIR}/cmake/modules/DetectArchitecture.c
+    ${LUAJIT_TOP_SOURCE_DIR}/cmake/modules/DetectArchitecture.c
     OUTPUT_VARIABLE OUTPUT
     COPY_FILE ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/DetectArchitecture.bin)
 
