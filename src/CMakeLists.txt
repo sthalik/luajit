@@ -484,7 +484,7 @@ if (BUILD_SHARED_LIBS)
     set(LJ_DEFINITIONS ${LJ_DEFINITIONS} -DLUA_BUILD_AS_DLL)
   endif()
   if (APPLE)
-    target_link_libraries("-image_base 7fff04c4a000")
+    target_link_libraries(libluajit "-image_base 7fff04c4a000")
   endif()
 endif()
 
