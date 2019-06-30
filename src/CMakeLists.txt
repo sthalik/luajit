@@ -354,6 +354,10 @@ add_custom_target(lj_gen_vm_s ALL
   DEPENDS ${LJ_VM_S_PATH}
 )
 
+if (APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET)
+  set_source_files_properties(${LJ_VM_NAME} PROPERTIES COMPILE_FLAGS -mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET})
+endif()
+
 make_directory(${CMAKE_CURRENT_BINARY_DIR}/jit)
 set(LJ_LIBDEF_PATH ${CMAKE_CURRENT_BINARY_DIR}/lj_libdef.h)
 set(LJ_RECDEF_PATH ${CMAKE_CURRENT_BINARY_DIR}/lj_recdef.h)
