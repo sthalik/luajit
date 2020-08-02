@@ -240,6 +240,8 @@ if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Android")
   set(TARGET_OS_FLAGS ${TARGET_OS_FLAGS} -D LUAJIT_OS=LUAJIT_OS_LINUX)
 elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
   set(TARGET_OS_FLAGS ${TARGET_OS_FLAGS} -D LUAJIT_OS=LUAJIT_OS_WINDOWS)
+elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "iOS")
+  set(TARGET_OS_FLAGS ${TARGET_OS_FLAGS} -D LUAJIT_OS=LUAJIT_OS_OSX -D TARGET_OS_IPHONE=1)
 elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
   set(TARGET_OS_FLAGS ${TARGET_OS_FLAGS} -D LUAJIT_OS=LUAJIT_OS_OSX)
 elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
@@ -449,6 +451,7 @@ set(luajit_sources
     lj_opt_sink.c
     lj_opt_split.c
     lj_parse.c
+    lj_prng.c
     lj_profile.c
     lj_record.c
     lj_snap.c
