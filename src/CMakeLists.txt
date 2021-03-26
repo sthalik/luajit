@@ -414,6 +414,7 @@ set(luajit_sources
     lib_aux.c
     lib_base.c
     lib_bit.c
+    lib_buffer.c
     lib_debug.c
     lib_ffi.c
     lib_init.c
