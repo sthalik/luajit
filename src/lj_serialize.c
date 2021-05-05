@@ -7,6 +7,8 @@
 #define LUA_CORE
 
 #include "lj_obj.h"
+
+#if LJ_HASBUFFER
 #include "lj_err.h"
 #include "lj_buf.h"
 #include "lj_str.h"
@@ -222,11 +224,13 @@ static char *serialize_put(char *w, StrBuf *sbuf, cTValue *o)
       ud = lj_bswap(ud);
 #endif
       *w++ = SER_TAG_LIGHTUD32; memcpy(w, &ud, 4); w += 4;
+#if LJ_64
     } else {
 #if LJ_BE
       ud = lj_bswap64(ud);
 #endif
       *w++ = SER_TAG_LIGHTUD64; memcpy(w, &ud, 8); w += 8;
+#endif
     }
   } else {
     /* NYI userdata */
@@ -349,3 +353,4 @@ StrBuf * LJ_FASTCALL lj_serialize_get(StrBuf *sbuf, TValue *o)
   return sbuf;
 }
 
+#endif
