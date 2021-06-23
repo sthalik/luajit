@@ -107,6 +107,10 @@ static void recff_stitch(jit_State *J)
   const BCIns *pc = frame_pc(base-1);
   TValue *pframe = frame_prevl(base-1);
 
+  /* Check for this now. Throwing in lj_record_stop messes up the stack. */
+  if (J->cur.nsnap >= (MSize)J->param[JIT_P_maxsnap])
+    lj_trace_err(J, LJ_TRERR_SNAPOV);
+
   /* Move func + args up in Lua stack and insert continuation. */
   memmove(&base[1], &base[-1-LJ_FR2], sizeof(TValue)*nslot);
   setframe_ftsz(nframe, ((char *)nframe - (char *)pframe) + FRAME_CONT);
@@ -961,8 +965,17 @@ static void LJ_FASTCALL recff_string_format(jit_State *J, RecordFFData *rd)
     case STRFMT_INT:
       id = IRCALL_lj_strfmt_putfnum_int;
     handle_int:
-      if (!tref_isinteger(tra))
+      if (!tref_isinteger(tra)) {
+#if LJ_HASFFI
+	if (tref_iscdata(tra)) {
+	  tra = lj_crecord_loadiu64(J, tra, &rd->argv[arg-1]);
+	  tr = lj_ir_call(J, IRCALL_lj_strfmt_putfxint, tr, trsf, tra);
+	  lj_needsplit(J);
+	  break;
+	}
+#endif
 	goto handle_num;
+      }
       if (sf == STRFMT_INT) { /* Shortcut for plain %d. */
 	tr = emitir(IRTG(IR_BUFPUT, IRT_PGC), tr,
 		    emitir(IRT(IR_TOSTR, IRT_STR), tra, IRTOSTR_INT));
