@@ -241,7 +241,7 @@ typedef struct UndocumentedDispatcherContext {
 /* Another wild guess. */
 extern void __DestructExceptionObject(EXCEPTION_RECORD *rec, int nothrow);
 
-#if LJ_TARGET_X64 && defined(MINGW_SDK_INIT)
+#if LJ_TARGET_X64 && defined(MINGW_SDK_INIT) && 0
 /* Workaround for broken MinGW64 declaration. */
 VOID RtlUnwindEx_FIXED(PVOID,PVOID,PVOID,PVOID,PVOID,PVOID) asm("RtlUnwindEx");
 #define RtlUnwindEx RtlUnwindEx_FIXED
@@ -1095,4 +1095,3 @@ LUALIB_API int luaL_error(lua_State *L, const char *fmt, ...)
   lj_err_callermsg(L, msg);
   return 0;  /* unreachable */
 }
-
