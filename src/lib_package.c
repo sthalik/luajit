@@ -68,6 +68,7 @@ static const char *ll_bcsym(void *lib, const char *sym)
 
 #elif LJ_TARGET_WINDOWS
 
+#undef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 

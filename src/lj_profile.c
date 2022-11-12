@@ -41,6 +41,7 @@
 
 #elif LJ_PROFILE_WTHREAD
 
+#undef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #if LJ_TARGET_XBOX360
 #include <xtl.h>

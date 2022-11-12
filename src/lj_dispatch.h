@@ -148,6 +148,7 @@ LJ_FUNCA void LJ_FASTCALL lj_dispatch_profile(lua_State *L, const BCIns *pc);
 /* Save/restore errno and GetLastError() around hooks, exits and recording. */
 #include <errno.h>
 #if LJ_TARGET_WINDOWS
+#undef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #define ERRNO_SAVE	int olderr = errno; DWORD oldwerr = GetLastError();

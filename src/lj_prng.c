@@ -93,6 +93,7 @@ extern int sceRandomGetRandomNumber(void *buf, size_t len);
 
 #elif LJ_TARGET_WINDOWS || LJ_TARGET_XBOXONE
 
+#undef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 

@@ -216,6 +216,7 @@ static void *err_unwind(lua_State *L, void *stopcf, int errcode)
 ** _set_se_translator doesn't really help, because it requires /EHa, too.
 */
 
+#undef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 

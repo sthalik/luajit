@@ -77,6 +77,7 @@
 /* Determine system-specific block allocation method. */
 #if LJ_TARGET_WINDOWS
 
+#undef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
