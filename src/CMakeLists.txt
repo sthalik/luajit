@@ -559,7 +559,7 @@ endif()
 target_compile_definitions(luajit PRIVATE ${LJ_DEFINITIONS})
 
 if (MSVC)
-  set_target_properties(luajit PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+  set_target_properties(luajit PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
 set(luajit_headers lauxlib.h lua.h luaconf.h luajit.h lualib.h)
