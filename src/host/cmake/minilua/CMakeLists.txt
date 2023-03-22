@@ -8,3 +8,7 @@ add_executable(minilua ../../minilua.c)
 if (LIBM_LIBRARIES)
   target_link_libraries(minilua ${LIBM_LIBRARIES})
 endif()
+
+if (MSVC)
+  set_target_properties(minilua PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+endif()

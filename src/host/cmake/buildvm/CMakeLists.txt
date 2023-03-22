@@ -42,6 +42,10 @@ if (LIBM)
   target_link_libraries(buildvm PRIVATE ${LIBM_LIBRARIES})
 endif()
 
+if (MSVC)
+  set_target_properties(buildvm PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+endif()
+
 target_include_directories(buildvm PRIVATE
   ${CMAKE_CURRENT_BINARY_DIR}/../../../
   ${CMAKE_CURRENT_BINARY_DIR}/../
