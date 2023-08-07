@@ -26,6 +26,12 @@ if ("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Windows")
 endif()
 set(MINILUA_PATH ${CMAKE_CURRENT_BINARY_DIR}/minilua/${MINILUA_EXE})
 
+if (MSVC)
+  # Workaround to avoid placing of executables into Debug/Release sub-directories
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $<1:${CMAKE_CURRENT_BINARY_DIR}>)
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY $<1:${CMAKE_CURRENT_BINARY_DIR}>)
+endif()
+
 # Build the minilua for host platform
 if (NOT CMAKE_CROSSCOMPILING)
   add_subdirectory(host/cmake/minilua)
@@ -516,7 +522,7 @@ if (BUILD_SHARED_LIBS)
 endif()
 
 if (MSVC)
-  set_target_properties(libluajit PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+  set_target_properties(libluajit PROPERTIES LIBRARY_OUTPUT_DIRECTORY $<1:${CMAKE_CURRENT_BINARY_DIR}>)
 endif()
 
 if(LIBM_LIBRARIES)
@@ -559,7 +565,7 @@ endif()
 target_compile_definitions(luajit PRIVATE ${LJ_DEFINITIONS})
 
 if (MSVC)
-  set_target_properties(luajit PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+  set_target_properties(luajit PROPERTIES RUNTIME_OUTPUT_DIRECTORY $<1:${CMAKE_CURRENT_BINARY_DIR}>)
 endif()
 
 set(luajit_headers lauxlib.h lua.h luaconf.h luajit.h lualib.h)

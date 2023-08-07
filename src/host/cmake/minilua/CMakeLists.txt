@@ -10,5 +10,5 @@ if (LIBM_LIBRARIES)
 endif()
 
 if (MSVC)
-  set_target_properties(minilua PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+  set_target_properties(minilua PROPERTIES RUNTIME_OUTPUT_DIRECTORY $<1:${CMAKE_CURRENT_BINARY_DIR}>)
 endif()
